@@ -117,3 +117,4 @@ setup.cfg
 .vscode-test/**
 .vscode-test
 **/.vscode/.ropeproject/**
+**/.vscode/settings.json
