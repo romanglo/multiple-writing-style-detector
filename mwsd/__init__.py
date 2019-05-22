@@ -1,6 +1,3 @@
 from .version import __version__
 
-__all__ = ["str_helper"]
-
-
-
+__all__ = ['tfidf', 'word2vec', 'utils']
