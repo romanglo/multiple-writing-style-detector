@@ -1,16 +1,16 @@
 from __future__ import division
-from builtins import int
 
 import logging
 import sys
+from builtins import int
 
+import matplotlib.pyplot as plt
 import numpy as np
+from scipy.stats import ks_2samp
 
 import tfidf
 import utils
 import word2vec
-from scipy.stats import ks_2samp
-import matplotlib.pyplot as plt
 
 
 def process():
@@ -24,7 +24,6 @@ def process():
     T = 10
     chunk_size = 50
     n_top_keywords = 1000
-    skipped_token_id = -1
 
     model = word2vec.train_word2vec(texts, stop_words, iter=20)
 
@@ -38,15 +37,12 @@ def process():
     keyword_words = keyword_words[:min(len(keyword_words), n_top_keywords)]
 
     ids, words = word2vec.text2ids(
-        model,
+        model=model,
         # texts[-1],
-        " ".join(texts[0:2]),
-        stop_words,
-        skipped_token_id=skipped_token_id)
-
-    for i, word in enumerate(words):
-        if word not in keyword_words:
-            ids[i] = skipped_token_id
+        text=" ".join(texts[0:2]),
+        stop_words=stop_words,
+        acceptable_tokens=keyword_words,
+        remove_skipped_tokens=True)
 
     chunks = utils.chunks(list(zip(ids, words)), chunk_size)
 
@@ -60,14 +56,10 @@ def process():
     for chunk in chunks:
         in_chunk_index = 0
         for i in range(len(chunk)):
-            if chunk[i][0] == skipped_token_id:
-                in_chunk_index += len(chunk) - i - 1
-                continue
             for j in range(i + 1, len(chunk)):
-                if chunk[j][0] != skipped_token_id:
-                    similarites_matrix[chunk_index][
-                        in_chunk_index] = model.similarity(
-                            chunk[i][1], chunk[j][1])
+                similarites_matrix[
+                    chunk_index][in_chunk_index] = model.similarity(
+                        chunk[i][1], chunk[j][1])
                 in_chunk_index += 1
 
         chunk_index += 1
@@ -75,17 +67,16 @@ def process():
     if model is not None:
         del model
 
-    DZVs = np.zeros((chunks_num - T + 1))
-    DZV = np.zeros(T)
-    for i in range(chunks_num - T - 1):
-        for j in range(i + 1, i + 1 + T):
-            statistic, pvalue = ks_2samp(similarites_matrix[i],
-                                         similarites_matrix[j])
-            DZV[j - (i + 1)] = statistic
-        DZVs[i] = np.sum(DZV)
+    ZVs = np.zeros(chunks_num - T + 1)
+    ZV_statistic = np.zeros((T))
+    for i in range(chunks_num - 1, T - 1, -1):
+        for j in range(i - 1, i - 1 - T, -1):
+            ZV_statistic[i - j - 1], _ = ks_2samp(similarites_matrix[i],
+                                                  similarites_matrix[j])
+        ZVs[i - T + 1] = np.sum(ZV_statistic)
 
-    plt.plot(DZVs)
-    plt.ylabel('DZV')
+    plt.plot(ZVs)
+    plt.ylabel('ZV')
     plt.show()
 
 

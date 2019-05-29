@@ -90,7 +90,13 @@ def text2mat(model, text, stop_words, skip_tokens=None):
     return mat, words
 
 
-def text2ids(model, text, stop_words, skip_tokens=None, skipped_token_id=-1):
+def text2ids(model,
+             text,
+             stop_words,
+             skip_tokens=None,
+             acceptable_tokens=None,
+             skipped_token_id=-1,
+             remove_skipped_tokens=False):
     words = preprocess_document(text, stop_words)
 
     word_vectors = model.wv
@@ -99,9 +105,15 @@ def text2ids(model, text, stop_words, skip_tokens=None, skipped_token_id=-1):
 
     if skip_tokens is None:
         skip_tokens = []
-
+    if acceptable_tokens is None:
+        acceptable_tokens = []
     for i, word in enumerate(words):
-        if word in word_vectors.vocab and word not in skip_tokens:
+        if word in word_vectors.vocab and word not in skip_tokens and word in acceptable_tokens:
             ids[i] = word_vectors.vocab[word].index
+
+    if remove_skipped_tokens:
+        words = np.array(
+            words, dtype=np.str)[np.where(ids != skipped_token_id)[0]]
+        ids = ids[ids != skipped_token_id]
 
     return ids, words
