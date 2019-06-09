@@ -46,10 +46,11 @@ def calculate_similarity_matrix(model, ids, words, chunk_size=chunk_size):
     return similarites_matrix
 
 
-def calculate_zv_distances(similarites_matrix, show_plt=False):
+def calculate_zv_distances(similarites_matrix, T=T, show_plt=False):
     chunks_num = similarites_matrix.shape[0]
     ZVs = np.zeros(chunks_num - T + 1)
     ZV_statistic = np.zeros((T))
+
     for i in range(chunks_num - 1, T - 1, -1):
         for j in range(i - 1, i - 1 - T, -1):
             ZV_statistic[i - j - 1], _ = ks_2samp(similarites_matrix[i],
@@ -63,6 +64,40 @@ def calculate_zv_distances(similarites_matrix, show_plt=False):
         plt.show()
 
     return ZVs
+
+
+def calculate_dzv_distances(first_similarites_matrix,
+                            second_similarites_matrix,
+                            T=T,
+                            show_plt=False):
+
+    DZVs = np.zeros((first_similarites_matrix.shape[0] - T + 1,
+                     second_similarites_matrix.shape[0] - T + 1))
+
+    for i in range(DZVs.shape[0]):
+        for j in range(i, DZVs.shape[1]):
+            zv_1 = 0
+            zv_2 = 0
+            zv_3 = 0
+            zv_4 = 0
+            for k in range(1, T + 1):
+                zv_1 += ks_2samp(first_similarites_matrix[i],
+                                 first_similarites_matrix[i + k])[0]
+                zv_2 += ks_2samp(first_similarites_matrix[j],
+                                 first_similarites_matrix[j + k])[0]
+                zv_3 += ks_2samp(first_similarites_matrix[i],
+                                 first_similarites_matrix[j + k])[0]
+                zv_4 += ks_2samp(first_similarites_matrix[j],
+                                 first_similarites_matrix[i + k])[0]
+            DZVs[i, j] = abs(zv_1 + zv_2 + zv_3 + zv_4)
+
+    # try:
+    #     i_upper = np.triu_indices(DZVs.shape[1])
+    #     DZVs.T[i_upper] = DZVs[i_upper]  # make the matrix symmetric
+    # except:
+    #     pass
+
+    return DZVs
 
 
 def zv_process(first_text, second_text, model, stop_words, keywords):
@@ -108,9 +143,22 @@ def dzv_process(first_text, second_text, model, stop_words, keywords):
                                                  second_text_words)
     del second_text_ids, second_text_words
 
-    # TODO calculate DZV distances
+    swapped = False
+
+    if first_sim_mat.shape[0] < second_sim_mat.shape[0]:
+        swapped = True
+        temp = first_sim_mat
+        first_sim_mat = second_sim_mat
+        second_sim_mat = temp
+
+    DZVs = calculate_dzv_distances(
+        first_similarites_matrix=first_sim_mat,
+        second_similarites_matrix=second_sim_mat,
+        show_plt=True)
 
     del first_sim_mat, second_sim_mat
+
+    return DZVs, swapped
 
 
 def process():
@@ -135,13 +183,19 @@ def process():
     first_text = " ".join(texts[:len(texts) // 2])
     second_text = " ".join(texts[len(texts) // 2:])
 
-    dzv_process(
+    DZV, swapped = dzv_process(
         first_text=first_text,
         second_text=second_text,
         model=model,
         stop_words=stop_words,
         keywords=n_top_keyword)
 
+    # normalize
+    DZV *= 255 / DZV.max()
+
+    fig, ax = plt.subplots()
+    ax.matshow(DZV, cmap=plt.cm.Blues)
+    plt.show()
     del model
 
 
