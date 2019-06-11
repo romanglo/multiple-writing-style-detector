@@ -4,6 +4,7 @@ import logging
 import sys
 import time
 from builtins import int
+from collections import Counter
 
 import numpy as np
 from scipy.stats import ks_2samp
@@ -206,12 +207,26 @@ def dzv_process(first_text, second_text, model, stop_words, keywords):
 
 
 def process():
+
     # model_name = r"data\GoogleNews-vectors-negative300.bin"
 
     data_path = r"data\wiki_articles"
-    files = utils.get_files_list_from_dir(data_path)[:6]
-    texts = utils.read_text_from_files(files, encoding='latin-1')
-    stop_words = utils.get_stop_words('english')
+
+    files = utils.get_files_list_from_dir(data_path)[:5]
+    texts = utils.read_text_from_files(files, encoding='utf-8')
+
+    langauge_ISO_639_1 = Counter(
+        [utils.detect_language(text) for text in texts]).most_common(1)[0][0]
+
+    language_nltk = utils.ISO_639_1_codes_to_nltk_codes(langauge_ISO_639_1)
+
+    if (language_nltk == utils.UNSUPPORTED_LANGAUGE):
+        logging.error(
+            f"The texts are in unsupported language: {langauge_ISO_639_1} (ISO 639-1 code)"
+        )
+        return
+
+    stop_words = utils.get_stop_words(language_nltk)
 
     model = word2vec.train_word2vec(texts, stop_words, iter=20)
 
@@ -224,8 +239,9 @@ def process():
     ]
     n_top_keyword = n_top_keyword[:min(len(n_top_keyword), n_top_keywords)]
 
-    first_text = " ".join(texts[:len(texts) // 2])
-    second_text = " ".join(texts[len(texts) // 2:])
+    full_text = " ".join(texts)
+    first_text = full_text[:len(full_text) // 2]
+    second_text = full_text[len(full_text) // 2:]
 
     ZV = zv_process(
         first_text=first_text,

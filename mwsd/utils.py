@@ -2,9 +2,45 @@ import logging
 import os
 import re
 
+from langdetect import detect
 from nltk import download
 from nltk.corpus import stopwords
 from smart_open import open
+
+UNSUPPORTED_LANGAUGE = "unsupported"
+
+
+def ISO_639_1_codes_to_nltk_codes(code):
+    switcher = {
+        "ar": "arabic",
+        "az": "azerbaijani",
+        "bn": "danish",
+        "en": "english",
+        "fi": "finnish",
+        "fr": "french",
+        "de": "german",  # "dutch"
+        "el": "greek",
+        "hu": "hungarian",
+        "id": "indonesian",
+        "kk": "kazakh",
+        "ne": "nepali",
+        "no": "norwegian",
+        "pt": "portuguese",
+        "ro": "romanian",
+        "ru": "russian",
+        "es": "spanish",
+        "sv": "swedish",
+        "tr": "turkish"
+    }
+    return switcher.get(code, UNSUPPORTED_LANGAUGE)
+
+
+def detect_language(text):
+    try:
+        return detect(text)
+    except:
+        logging.exception(
+            f"Failed on try to detect the language of the text: {text}")
 
 
 def chunks(iterable, chunk_size):
