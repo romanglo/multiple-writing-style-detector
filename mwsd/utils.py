@@ -43,7 +43,7 @@ def detect_language(text):
             f"Failed on try to detect the language of the text: {text}")
 
 
-def chunks(iterable, chunk_size):
+def split_to_chunks(iterable, chunk_size):
     for i in range(0, len(iterable), chunk_size):
         yield iterable[i:i + chunk_size]
 
@@ -75,13 +75,6 @@ def download_nltk_dependencies():
     ids = ['stopwords', 'punkt']
     for id in ids:
         download(id)
-
-
-def initialize_logging_config(logging_level):
-    logging.basicConfig(
-        format=
-        u'%(asctime)s %(name)-7s [%(filename)10s:%(lineno)3s - %(funcName)20s()] %(levelname)-8s:: %(message)s.',
-        level=logging_level)
 
 
 def get_files_list_from_dir(path, extension=None):

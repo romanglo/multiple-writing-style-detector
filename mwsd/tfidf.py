@@ -15,7 +15,7 @@ from builtins import str
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
 
 
-def preprocess_document(doc):
+def _preprocess_document(doc):
     text = doc.lower()  # lowercase
     text = re.sub("</?.*?>", " <> ", text)  # remove tags
     text = re.sub("(\\d|\\W)+", " ",
@@ -49,7 +49,7 @@ def create_transformers(docs, stop_words):
 
     cleared_docs = []
     for doc in docs:
-        cleared_docs.append(preprocess_document(doc))
+        cleared_docs.append(_preprocess_document(doc))
 
     count_vectorizer = CountVectorizer(stop_words=stop_words)
     word_count_vector = count_vectorizer.fit_transform(cleared_docs)

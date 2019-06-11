@@ -27,7 +27,7 @@ from gensim.models import KeyedVectors, Word2Vec
 from nltk import word_tokenize
 
 
-def preprocess_document(doc, stop_words):
+def _preprocess_document(doc, stop_words):
 
     tokens = word_tokenize(doc.lower())
 
@@ -60,7 +60,7 @@ def train_word2vec(train_data,
 
     train_data = [train_data] if isinstance(train_data, str) else train_data
 
-    w2v_corpus = [preprocess_document(data, stop_words) for data in train_data]
+    w2v_corpus = [_preprocess_document(data, stop_words) for data in train_data]
 
     model = Word2Vec(
         w2v_corpus, iter=iter, workers=worker_no, size=vector_size, sg=1)
@@ -89,7 +89,7 @@ def load_model(path, keyed_vectors=False, binary=False):
 
 
 def text2mat(model, text, stop_words, skip_tokens=None):
-    words = preprocess_document(text, stop_words)
+    words = _preprocess_document(text, stop_words)
 
     word_vectors = model.wv
     vector_size = model.vector_size
@@ -112,7 +112,7 @@ def text2ids(model,
              acceptable_tokens=None,
              skipped_token_id=-1,
              remove_skipped_tokens=False):
-    words = preprocess_document(text, stop_words)
+    words = _preprocess_document(text, stop_words)
 
     word_vectors = model.wv
 
