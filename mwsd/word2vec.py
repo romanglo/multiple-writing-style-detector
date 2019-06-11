@@ -1,15 +1,28 @@
 """
+Word2Vec
+=====================================================================
+
+**word2vec** module providing a tools for work with Word2Vec gensim models.
+
+Main Features
+-------------
+  - Load exist model.
+  - Train a new model.
+  - Text to embedded matrix.
+  - Text to IDs.
+
+
 This script was created with the use of:
 https://github.com/subramanyata/myprojects/tree/master/word2vec
 """
 
-from future.utils import raise_with_traceback
-
 import logging
 import os
 import time
+from builtins import str
 
 import numpy as np
+from future.utils import raise_with_traceback
 from gensim.models import KeyedVectors, Word2Vec
 from nltk import word_tokenize
 
@@ -44,6 +57,8 @@ def train_word2vec(train_data,
     if not train_data:
         logging.error("no training data")
         return None
+
+    train_data = [train_data] if isinstance(train_data, str) else train_data
 
     w2v_corpus = [preprocess_document(data, stop_words) for data in train_data]
 

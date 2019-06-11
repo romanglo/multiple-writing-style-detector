@@ -1,9 +1,16 @@
 """
+Term Frequency–Inverse Document Frequency
+=====================================================================
+
+**tfidf** module providing an implementation of an tf-idf (using sklearn) and provide an option to extract the top N
+keywords in text.
+
 This script was created with the use of:
 https://github.com/kavgan/nlp-in-practice/tree/master/tf-idf
 """
 
 import re
+from builtins import str
 
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
 
@@ -37,16 +44,14 @@ def extract_topn_from_vector(feature_names, sorted_items, top_n):
 
 
 def create_transformers(docs, stop_words):
-    try:
-        iter(docs)
-    except TypeError:
-        docs = [docs]
+
+    docs = [docs] if isinstance(docs, str) else docs
 
     cleared_docs = []
     for doc in docs:
         cleared_docs.append(preprocess_document(doc))
 
-    count_vectorizer = CountVectorizer(max_df=0.85, stop_words=stop_words)
+    count_vectorizer = CountVectorizer(stop_words=stop_words)
     word_count_vector = count_vectorizer.fit_transform(cleared_docs)
 
     tfidf_transformer = TfidfTransformer(smooth_idf=True, use_idf=True)

@@ -38,7 +38,7 @@ def ISO_639_1_codes_to_nltk_codes(code):
 def detect_language(text):
     try:
         return detect(text)
-    except:
+    except Exception:
         logging.exception(
             f"Failed on try to detect the language of the text: {text}")
 
