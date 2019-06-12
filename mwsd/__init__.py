@@ -2,8 +2,8 @@
 Multi Writing Style Detection
 =====================================================================
 
-**mwsd** is a Python package providing an implementation of an algorithm to detect
-a Multi Writing Style Detection in texts.
+**mwsd** is a Python package providing an implementation of an algorithm to Detect
+a Multi Writing Style in texts.
 
 Module main feature is determining whether 2 texts are written in the same writing style.
 """
