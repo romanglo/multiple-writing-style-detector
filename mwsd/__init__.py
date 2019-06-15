@@ -134,4 +134,4 @@ def dzv(first_text,
         n_top_keywords=n_top_keywords)
 
 
-__all__ = ['tfidf', 'word2vec', 'utils', 'algorithm']
+__all__ = ['tfidf', 'word2vec', 'utils', 'algorithm', 'visualize']

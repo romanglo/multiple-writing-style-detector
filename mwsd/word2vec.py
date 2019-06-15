@@ -129,8 +129,7 @@ def text2ids(model,
             ids[i] = word_vectors.vocab[word].index
 
     if remove_skipped_tokens:
-        words = np.array(
-            words, dtype=np.str)[np.where(ids != skipped_token_id)[0]]
+        words = np.array(words, dtype=np.unicode)[np.where(ids != skipped_token_id)[0]]
         ids = ids[ids != skipped_token_id]
 
     return ids, words

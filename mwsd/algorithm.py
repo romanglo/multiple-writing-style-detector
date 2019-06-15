@@ -55,6 +55,12 @@ def _calculate_similarity_matrix(model, words, chunk_size=DEFAULT_CHUNK_SIZE):
 
 def _calculate_zv_distances(similarites_matrix, T=DEFAULT_T):
     chunks_num = similarites_matrix.shape[0]
+
+    if chunks_num < T:
+        err_msg = "The are to few chunks for calculate ZV distance, chunks number:{} must be bigger the T:{}.".format(chunks_num, T)
+        logging.error(err_msg)
+        raise_with_traceback(Exception(err_msg))
+
     ZVs = np.zeros(chunks_num - T + 1)
 
     for i in range(ZVs.shape[0]):
@@ -149,7 +155,7 @@ def zv_process(text,
     start_time = time.time()
     ZVs = _calculate_zv_distances(sim_mat, T)
     end_time = time.time()
-    logging.debug("ZV distances calculation took {:.4f} seconds".format(end_time-start_time))
+    logging.debug("ZV distances calculation took {:.4f} seconds".format(end_time - start_time))
 
     del sim_mat
 
