@@ -1,4 +1,4 @@
-from __future__ import division
+from __future__ import division, unicode_literals
 
 import logging
 import sys
@@ -7,24 +7,18 @@ import mwsd
 
 
 def initialize_logging_config(logging_level):
-    logging.basicConfig(
-        format=
-        u'%(asctime)s %(name)-7s [%(filename)10s:%(lineno)3s - %(funcName)20s()] %(levelname)-8s:: %(message)s.',
-        level=logging_level)
+    logging.basicConfig(format=u'%(asctime)s %(name)-7s [%(filename)10s:%(lineno)3s - %(funcName)20s()] %(levelname)-8s:: %(message)s.', level=logging_level)
 
 
 def process():
 
-    # model_name = r"data\GoogleNews-vectors-negative300.bin"
+    first_text = " ".join(
+        mwsd.utils.read_text_from_files(
+            mwsd.utils.get_files_list_from_dir(r"data\2"), encoding='utf-8'))
 
-    data_path = r"data\wiki_articles"
-
-    files = mwsd.utils.get_files_list_from_dir(data_path)
-    texts = mwsd.utils.read_text_from_files(files, encoding='utf-8')
-
-    full_text = " ".join(texts)
-    first_text = full_text[:len(full_text) // 2]
-    second_text = full_text[len(full_text) // 2:]
+    second_text = " ".join(
+        mwsd.utils.read_text_from_files(
+            mwsd.utils.get_files_list_from_dir(r"data\3"), encoding='utf-8'))
 
     ZV, DZV = mwsd.execute(first_text, second_text)
 

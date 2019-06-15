@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
 Word2Vec
 =====================================================================
@@ -31,7 +33,7 @@ def _preprocess_document(doc, stop_words):
 
     tokens = word_tokenize(doc.lower())
 
-    logging.debug(f"The document contains {len(tokens)} tokens")
+    logging.debug("The document contains {} tokens".format(len(tokens)))
 
     if stop_words is None:
         stop_words = []
@@ -43,7 +45,7 @@ def _preprocess_document(doc, stop_words):
     ]
 
     logging.debug(
-        f"Number of tokens after removing stop words, numbers and punctuation: {len(tokens)}"
+        "Number of tokens after removing stop words, numbers and punctuation: {}".format(len(tokens))
     )
 
     return tokens
@@ -52,7 +54,7 @@ def _preprocess_document(doc, stop_words):
 def train_word2vec(train_data,
                    stop_words,
                    iter=5,
-                   worker_no=4,
+                   worker_no=3,
                    vector_size=100):
     if not train_data:
         logging.error("no training data")
@@ -70,7 +72,7 @@ def train_word2vec(train_data,
 
 def load_model(path, keyed_vectors=False, binary=False):
     if not os.path.isfile(path):
-        err_msg = f"Received embedding model binary not found! Path: {path}"
+        err_msg = "Received embedding model binary not found! Path: {}".format(path)
         logging.error(err_msg)
         raise_with_traceback(FileNotFoundError(err_msg))
 
@@ -83,7 +85,7 @@ def load_model(path, keyed_vectors=False, binary=False):
 
     running_time = time.time() - start_time
 
-    logging.debug(f"Model loading time: {running_time} seconds")
+    logging.debug("Model loading time: {} seconds".format(running_time))
 
     return model
 

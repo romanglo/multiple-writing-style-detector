@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import logging
 import os
 import re
@@ -40,7 +42,8 @@ def detect_language(text):
         return detect(text)
     except Exception:
         logging.exception(
-            f"Failed on try to detect the language of the text: {text}")
+            "Failed on try to detect the language of the text: {}".format(
+                text))
 
 
 def split_to_chunks(iterable, chunk_size):
@@ -48,7 +51,7 @@ def split_to_chunks(iterable, chunk_size):
         yield iterable[i:i + chunk_size]
 
 
-def removeMultipleSpaces(inStr: str) -> str:
+def removeMultipleSpaces(inStr):
     if not inStr:
         return None
 
@@ -57,7 +60,7 @@ def removeMultipleSpaces(inStr: str) -> str:
     return outStr
 
 
-def removeChars(inStr: str, charsToRemove: str) -> str:
+def removeChars(inStr, charsToRemove):
     if not inStr or not charsToRemove:
         return None
 
@@ -79,11 +82,12 @@ def download_nltk_dependencies():
 
 def get_files_list_from_dir(path, extension=None):
     if not os.path.isdir(path):
-        logging.warning(f"Received path: \"{path}\" is not a folder path!")
+        logging.warning(
+            "Received path: \"{}\" is not a folder path!".format(path))
         return []
     files = os.listdir(path)
     if not files:
-        logging.warning(f"Received folder: \"{path}\" is empty!")
+        logging.warning("Received folder: \"{}\" is empty!".format(path))
         return []
 
     if not extension:
