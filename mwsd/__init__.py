@@ -4,17 +4,26 @@ Multi Writing Style Detection
 =====================================================================
 
 **mwsd** is a Python package providing an implementation of an algorithm to Detect
-a Multi Writing Style in texts.
+a Multi Writing Style in texts. This project implements a solution of detecting numerous
+writing styles in a text. There are many different ways to measure how similar two documents
+are, or how similar a document is to a query. The project implements the first algorithm of
+the article with minor changes, which don't affect the outcomes. This algorithm is suggested
+in the "Patterning of writing style evolution by means of dynamic similarity" by Konstantin
+Amelina, Oleg Granichina, Natalia Kizhaevaa and Zeev Volkovich
+(http://www.math.spbu.ru/user/gran/papers/Granichin_Pattern_Recognition.pdf).
 
 Module main feature is determining whether 2 texts are written in the same writing style.
+
+Project Home Page:
+https://github.com/romanglo/multiple-writing-style-detector
 """
 from __future__ import absolute_import
 
 from .version import __version__
 
 from .utils import download_nltk_dependencies
-from .algorithm import execute_algorithm, execute_dzv, execute_zv
-from .algorithm import DEFAULT_CHUNK_SIZE, DEFAULT_N_TOP_KEYWORDS, DEFAULT_T
+from .algorithm import execute_algorithm, execute_dzv, execute_zv, execute_dzv_clustering
+from .algorithm import DEFAULT_CHUNK_SIZE, DEFAULT_N_TOP_KEYWORDS, DEFAULT_T, DEFAULT_CLUSTERING_K, DEFAULT_CLUSTERING_SPAWN
 
 
 def initialize():
@@ -53,7 +62,21 @@ def execute(first_text,
 
     Returns
     ----------
-    (np.array, np.array): ZV distance (1 dimensional array), DZV distance (2 dimensional array)
+    (np.array, np.array, list): ZV distance (1 dimensional array), DZV distance (2 dimensional array), Mediods
+
+    Algorithm
+    ----------
+    Full algorithm documentation is at the link:  https://github.com/romanglo/multiple-writing-style-detector#algorithm
+    1. The algorithm receives two texts for input.
+    2. Find the N top keywords using tf–idf.
+    3. Remove from the texts the stopwords and words that not in the N (initially defined amount)  top keywords.
+    4. Gather groups of 'L' (initially defined amount)  keywords out of the text.
+    5. Use word2vec to represent each word as a vector for both documents.
+    6. Calculate the correlation between all the words in each group (L) using the Kolmogorov-Smirnov statistic. Each group (L) became a vector of L(L-1)/2 dimensionality.
+    7. Find an association between the vector and its 'T' (initially defined amount) predecessors, using ZV formula.
+    8. Measure the distance between the documents using DZV formula.
+    9. PAM (known also as k-medoids) clustering into two clusters.
+
     """
     return execute_algorithm(
         first_text=first_text,
@@ -134,4 +157,27 @@ def dzv(first_text,
         n_top_keywords=n_top_keywords)
 
 
-__all__ = ['tfidf', 'word2vec', 'utils', 'algorithm', 'visualize']
+def dzv_clustering(dzv, k=DEFAULT_CLUSTERING_K,
+                   spawn=DEFAULT_CLUSTERING_SPAWN):
+    """
+    Cluster DZV result using k-mediods clustering .
+
+    Parameters
+    ----------
+    dzv : np.array (2 dimensional array)
+        DZV distance matrix to cluster.
+    k : int
+        Number of desired clusters (> 2)
+    spawn : int
+        The number of spawns in the clustering (> 1)
+    T: int
+        T look ahead when calculating the algorithm
+
+    Returns
+    ----------
+    list: Mediods
+    """
+    return execute_dzv_clustering(dzv=dzv, k=k, spawn=spawn)
+
+
+__all__ = ['tfidf', 'word2vec', 'utils', 'algorithm', 'visualize', 'mediods']

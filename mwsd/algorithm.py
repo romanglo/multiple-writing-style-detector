@@ -13,10 +13,14 @@ from .tfidf import get_n_top_keywords
 from .utils import (UNSUPPORTED_LANGAUGE, ISO_639_1_codes_to_nltk_codes,
                     detect_language, get_stop_words, split_to_chunks)
 from .word2vec import text2ids, train_word2vec
+from .mediods import k_medoids
 
 DEFAULT_T = 10
 DEFAULT_CHUNK_SIZE = 50
 DEFAULT_N_TOP_KEYWORDS = 1000
+
+DEFAULT_CLUSTERING_K = 2
+DEFAULT_CLUSTERING_SPAWN = 10
 
 
 def _calculate_similarity_matrix(model, words, chunk_size=DEFAULT_CHUNK_SIZE):
@@ -57,7 +61,8 @@ def _calculate_zv_distances(similarites_matrix, T=DEFAULT_T):
     chunks_num = similarites_matrix.shape[0]
 
     if chunks_num < T:
-        err_msg = "The are to few chunks for calculate ZV distance, chunks number:{} must be bigger the T:{}.".format(chunks_num, T)
+        err_msg = "The are to few chunks for calculate ZV distance, chunks number:{} must be bigger the T:{}.".format(
+            chunks_num, T)
         logging.error(err_msg)
         raise_with_traceback(Exception(err_msg))
 
@@ -148,14 +153,18 @@ def zv_process(text,
     start_time = time.time()
     sim_mat = _calculate_similarity_matrix(model, words, chunk_size)
     end_time = time.time()
-    logging.debug("similarity matrix calculation took {:.4f} seconds".format(end_time - start_time))
+    logging.debug(
+        "similarity matrix calculation took {:.4f} seconds".format(end_time -
+                                                                   start_time))
 
     del ids, words
 
     start_time = time.time()
     ZVs = _calculate_zv_distances(sim_mat, T)
     end_time = time.time()
-    logging.debug("ZV distances calculation took {:.4f} seconds".format(end_time - start_time))
+    logging.debug(
+        "ZV distances calculation took {:.4f} seconds".format(end_time -
+                                                              start_time))
 
     del sim_mat
 
@@ -178,13 +187,16 @@ def dzv_process(first_text,
         acceptable_tokens=keywords,
         remove_skipped_tokens=True)
     end_time = time.time()
-    logging.debug("first text word2vec runs {:.4f} seconds".format(end_time - start_time))
+    logging.debug("first text word2vec runs {:.4f} seconds".format(end_time -
+                                                                   start_time))
 
     start_time = time.time()
     first_sim_mat = _calculate_similarity_matrix(model, first_text_words,
                                                  chunk_size)
     end_time = time.time()
-    logging.debug("first text similarity matrix calculation took {:.4f} seconds".format(end_time - start_time))
+    logging.debug(
+        "first text similarity matrix calculation took {:.4f} seconds".format(
+            end_time - start_time))
 
     del first_text_ids, first_text_words
 
@@ -196,13 +208,17 @@ def dzv_process(first_text,
         acceptable_tokens=keywords,
         remove_skipped_tokens=True)
     end_time = time.time()
-    logging.debug("second text word2vec runs {:.4f} seconds".format(end_time - start_time))
+    logging.debug(
+        "second text word2vec runs {:.4f} seconds".format(end_time -
+                                                          start_time))
 
     start_time = time.time()
     second_sim_mat = _calculate_similarity_matrix(model, second_text_words,
                                                   chunk_size)
     end_time = time.time()
-    logging.debug("second text similarity matrix calculation took {:.4f} seconds".format(end_time - start_time))
+    logging.debug(
+        "second text similarity matrix calculation took {:.4f} seconds".format(
+            end_time - start_time))
 
     del second_text_ids, second_text_words
 
@@ -213,7 +229,9 @@ def dzv_process(first_text,
         T=T)
 
     end_time = time.time()
-    logging.debug("DZV matrix calculation took {:.4f} seconds".format(end_time - start_time))
+    logging.debug(
+        "DZV matrix calculation took {:.4f} seconds".format(end_time -
+                                                            start_time))
 
     del first_sim_mat, second_sim_mat
 
@@ -227,7 +245,8 @@ def _preprocess(texts, model=None, n_top_keywords=DEFAULT_N_TOP_KEYWORDS):
     language_nltk = ISO_639_1_codes_to_nltk_codes(langauge_ISO_639_1)
 
     if (language_nltk == UNSUPPORTED_LANGAUGE):
-        unsupported_language_msg = "The texts are in unsupported language: {} (ISO 639-1 code)".format(langauge_ISO_639_1)
+        unsupported_language_msg = "The texts are in unsupported language: {} (ISO 639-1 code)".format(
+            langauge_ISO_639_1)
         logging.error(unsupported_language_msg)
         raise_with_traceback(Exception(unsupported_language_msg))
 
@@ -262,7 +281,8 @@ def execute_algorithm(first_text,
         model=model,
         n_top_keywords=n_top_keywords)
     end_time = time.time()
-    logging.debug("Preprocessing took {:.4f} seconds".format(end_time - start_time))
+    logging.debug(
+        "Preprocessing took {:.4f} seconds".format(end_time - start_time))
 
     start_time = time.time()
     ZV = zv_process(
@@ -292,7 +312,9 @@ def execute_algorithm(first_text,
     if del_model:
         del model
 
-    return ZV, DZV
+    medoids = execute_dzv_clustering(DZV)
+
+    return ZV, DZV, medoids
 
 
 def execute_zv(text,
@@ -307,7 +329,8 @@ def execute_zv(text,
     stop_words, model, n_top_keyword = _preprocess(
         texts=[text], model=model, n_top_keywords=n_top_keywords)
     end_time = time.time()
-    logging.debug("Preprocessing took {:.4f} seconds".format(end_time - start_time))
+    logging.debug(
+        "Preprocessing took {:.4f} seconds".format(end_time - start_time))
 
     start_time = time.time()
     ZV = zv_process(
@@ -318,7 +341,8 @@ def execute_zv(text,
         T=T,
         chunk_size=chunk_size)
     end_time = time.time()
-    logging.debug("ZV calculation took {:.4f} seconds".format(end_time - start_time))
+    logging.debug(
+        "ZV calculation took {:.4f} seconds".format(end_time - start_time))
 
     if del_model:
         del model
@@ -341,7 +365,8 @@ def execute_dzv(first_text,
         model=model,
         n_top_keywords=n_top_keywords)
     end_time = time.time()
-    logging.debug("Preprocessing took {:.4f} seconds".format(end_time - start_time))
+    logging.debug(
+        "Preprocessing took {:.4f} seconds".format(end_time - start_time))
 
     start_time = time.time()
     DZV = dzv_process(
@@ -353,9 +378,42 @@ def execute_dzv(first_text,
         T=T,
         chunk_size=chunk_size)
     end_time = time.time()
-    logging.debug("DZV calculation took {:.4f} seconds".format(end_time - start_time))
+    logging.debug(
+        "DZV calculation took {:.4f} seconds".format(end_time - start_time))
 
     if del_model:
         del model
 
     return DZV
+
+
+def execute_dzv_clustering(dzv,
+                           k=DEFAULT_CLUSTERING_K,
+                           spawn=DEFAULT_CLUSTERING_SPAWN):
+
+    if k < 2:
+        k = 2
+    if spawn < 1:
+        spawn = 1
+
+    def distance(a, b):
+        return np.linalg.norm(a - b)
+
+    start_time = time.time()
+
+    diameter, medoids = k_medoids(
+        k=k,
+        points=dzv,
+        distance=distance,
+        spawn=spawn,
+        equality=distance,
+        verbose=True)
+    end_time = time.time()
+    logging.debug(
+        "DZV clustering took {:.4f} seconds".format(end_time - start_time))
+
+    logging.debug(
+        "Clustering to {} clusters with spawn of {} gives diameter of {:.4f}".format(
+            k, spawn, diameter))
+
+    return medoids
