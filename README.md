@@ -42,7 +42,7 @@ python setup.py install
 
 **Note!** There is an [example](example.py) to how to wrap the algorithm with simple main script.
 
-The package provides 3 main features:
+The package provides 4 main features:
 1. Full [algorithm](#algorithm) implementation:
     ```python
     def execute(first_text,
@@ -174,7 +174,7 @@ Writing style detection algorithm performs the following steps:
 
 ## Results
 
-**TODO** Add results.
+Below is a result that clearly shows that the texts consist of 2 different writing styles. <div style="text-align:center">![Multiple Writing Style Detector Algorithm Result](images/mwsd_result.png "Multiple Writing Style Detector Algorithm Result")</div>
 
 ## Authors
 
