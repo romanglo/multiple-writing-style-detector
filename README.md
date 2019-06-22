@@ -71,16 +71,16 @@ The package provides 3 main features:
 
     Returns
     ----------
-    (np.array, np.array): ZV distance (1 dimensional array), DZV distance (2 dimensional array)
+    (np.array, np.array, list): ZV distance (1 dimensional array), DZV distance (2 dimensional array), Mediods
     """
     ```
 1. Text ZV distance implementation:
    ```python
    def zv(text,
-       model=None,
-       T=10,
-       chunk_size=50,
-       n_top_keywords=1000):
+        model=None,
+        T=10,
+        chunk_size=50,
+        n_top_keywords=1000):
     """
     Calculate ZV distance of text.
 
@@ -132,6 +132,31 @@ The package provides 3 main features:
     Returns
     ----------
     np.array: DZV distance (2 dimensional array)
+    """
+   ```
+   ```
+1. DZV distance matrix clustering:
+   ```python
+   def dzv_clustering(dzv,
+         k=2,
+         spawn=10):
+    """
+    Cluster DZV result using k-mediods clustering.
+
+    Parameters
+    ----------
+    dzv : np.array (2 dimensional array)
+        DZV distance matrix to cluster.
+    k : int
+        Number of desired clusters (> 2)
+    spawn : int
+        The number of spawns in the clustering (> 1)
+    T: int
+        T look ahead when calculating the algorithm
+
+    Returns
+    ----------
+    list: Mediods
     """
    ```
 ## Algorithm
