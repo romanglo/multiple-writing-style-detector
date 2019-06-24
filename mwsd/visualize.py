@@ -31,7 +31,9 @@ def visualize_zv(zv, show_plot=True, plot_saving_path=None):
 
     if plot_saving_path is not None:
         try:
-            plt.savefig(plot_saving_path)
+            plt.savefig(
+                plot_saving_path,
+                dpi=1000)
         except Exception:
             logging.error("Failed on try to save the plot in path: {}".format(
                 plot_saving_path))
@@ -40,7 +42,8 @@ def visualize_zv(zv, show_plot=True, plot_saving_path=None):
         plt.show()
 
 
-def visualize_dzv(dzv, show_plot=True, plot_saving_path=None):
+def visualize_dzv(dzv, show_plot=True,
+                  plot_saving_path=None):
     fig, ax = plt.subplots()
 
     ax.imshow(dzv, interpolation='nearest', cmap=plt.cm.Blues)
@@ -53,7 +56,9 @@ def visualize_dzv(dzv, show_plot=True, plot_saving_path=None):
 
     if plot_saving_path is not None:
         try:
-            plt.savefig(plot_saving_path)
+            plt.savefig(
+                plot_saving_path,
+                dpi=1000)
         except Exception:
             logging.error("Failed on try to save the plot in path: {}".format(
                 plot_saving_path))
@@ -111,17 +116,24 @@ def visualize_clustered_dzv(dzv,
 
     if plot_saving_path is not None:
         try:
-            plt.savefig(plot_saving_path)
+            plt.savefig(
+                plot_saving_path,
+                dpi=1000)
         except Exception:
             logging.error("Failed on try to save the plot in path: {}".format(
                 plot_saving_path))
+
     if show_plot:
         plt.show()
 
     plt.show()
 
 
-def visualize(zv, dzv, medoids, show_plot=True, plot_saving_path=None):
+def visualize(zv,
+              dzv,
+              medoids,
+              show_plot=True,
+              plot_saving_path=None):
     fig, (ax_row, ax_col) = plt.subplots(
         nrows=2, ncols=2, num='Algorithm Results')
 
@@ -195,7 +207,9 @@ def visualize(zv, dzv, medoids, show_plot=True, plot_saving_path=None):
 
     if plot_saving_path is not None:
         try:
-            plt.savefig(plot_saving_path)
+            plt.savefig(
+                plot_saving_path,
+                dpi=1000)
         except Exception:
             logging.error("Failed on try to save the plot in path: {}".format(
                 plot_saving_path))

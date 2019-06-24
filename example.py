@@ -61,9 +61,9 @@ def process(first_input, second_input, save_output):
     mwsd.initialize()
 
     if not os.path.isfile(first_input):
-        raise IOError("First input file not exists: {}".format(first_input))
+        raise IOError("First input file does not exist: {}".format(first_input))
     if not os.path.isfile(second_input):
-        raise IOError("Seconds input file not exists: {}".format(second_input))
+        raise IOError("Second input file does not exist: {}".format(second_input))
 
     first_text, second_text = mwsd.utils.read_text_from_files(
         [first_input, second_input], encoding='utf-8')
@@ -71,6 +71,7 @@ def process(first_input, second_input, save_output):
     ZV, DZV, medoids = mwsd.execute(first_text, second_text)
 
     plot_saving_path = 'mwsd_result.png' if save_output else None
+
     visualize(
         ZV, DZV, medoids, show_plot=True, plot_saving_path=plot_saving_path)
 
