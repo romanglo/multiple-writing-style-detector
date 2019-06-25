@@ -134,7 +134,6 @@ The package provides 4 main features:
     np.array: DZV distance (2 dimensional array)
     """
    ```
-   ```
 1. DZV distance matrix clustering:
    ```python
    def dzv_clustering(dzv,
