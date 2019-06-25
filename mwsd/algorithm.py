@@ -1,4 +1,4 @@
-from __future__ import division, absolute_import
+from __future__ import absolute_import, division
 
 import logging
 import time
@@ -9,11 +9,11 @@ import numpy as np
 from future.utils import raise_with_traceback
 from scipy.stats import ks_2samp
 
+from .mediods import k_medoids
 from .tfidf import get_n_top_keywords
 from .utils import (UNSUPPORTED_LANGAUGE, ISO_639_1_codes_to_nltk_codes,
                     detect_language, get_stop_words, split_to_chunks)
 from .word2vec import text2ids, train_word2vec
-from .mediods import k_medoids
 
 DEFAULT_T = 10
 DEFAULT_CHUNK_SIZE = 50
@@ -57,6 +57,18 @@ def _calculate_similarity_matrix(model, words, chunk_size=DEFAULT_CHUNK_SIZE):
     return similarites_matrix
 
 
+def _calculate_zv(first_mat, i, second_mat, j, T=DEFAULT_T):
+    ks = np.apply_along_axis(
+        ks_2samp,
+        1,
+        second_mat[j - T + 1:j],
+        first_mat[i],
+    )
+    ks_stats = ks[:, 0]
+
+    return np.average(ks_stats)
+
+
 def _calculate_zv_distances(similarites_matrix, T=DEFAULT_T):
     chunks_num = similarites_matrix.shape[0]
 
@@ -66,17 +78,11 @@ def _calculate_zv_distances(similarites_matrix, T=DEFAULT_T):
         logging.error(err_msg)
         raise_with_traceback(Exception(err_msg))
 
-    ZVs = np.zeros(chunks_num - T + 1)
+    ZVs = np.zeros(chunks_num - T)
 
     for i in range(ZVs.shape[0]):
-        ZVs[i] = np.sum(
-            np.apply_along_axis(
-                ks_2samp,
-                1,
-                similarites_matrix[i + 1:i + T + 1],
-                similarites_matrix[i],
-            )[:, 0],
-            axis=0)
+        ZVs[i] = _calculate_zv(similarites_matrix, T + i, similarites_matrix,
+                               T + i - 1, T)
 
     return ZVs
 
@@ -85,49 +91,20 @@ def _calculate_dzv_distances(first_similarites_matrix,
                              second_similarites_matrix,
                              T=DEFAULT_T):
 
-    DZV = np.zeros((first_similarites_matrix.shape[0] - T + 1,
-                    second_similarites_matrix.shape[0] - T + 1))
+    DZV = np.zeros((first_similarites_matrix.shape[0] - T,
+                    second_similarites_matrix.shape[0] - T))
 
     for i in range(DZV.shape[0]):
-
-        zv_1 = np.sum(
-            np.apply_along_axis(
-                ks_2samp,
-                1,
-                first_similarites_matrix[i + 1:i + T + 1],
-                first_similarites_matrix[i],
-            )[:, 0],
-            axis=0)
+        zv_1 = _calculate_zv(first_similarites_matrix, T + i,
+                             first_similarites_matrix, T + i - 1, T)
 
         for j in range(DZV.shape[1]):
-
-            zv_2 = np.sum(
-                np.apply_along_axis(
-                    ks_2samp,
-                    1,
-                    second_similarites_matrix[j + 1:j + T + 1],
-                    second_similarites_matrix[j],
-                )[:, 0],
-                axis=0)
-
-            zv_3 = np.sum(
-                np.apply_along_axis(
-                    ks_2samp,
-                    1,
-                    second_similarites_matrix[j + 1:j + T + 1],
-                    first_similarites_matrix[i],
-                )[:, 0],
-                axis=0)
-
-            zv_4 = np.sum(
-                np.apply_along_axis(
-                    ks_2samp,
-                    1,
-                    first_similarites_matrix[i + 1:i + T + 1],
-                    second_similarites_matrix[j],
-                )[:, 0],
-                axis=0)
-
+            zv_2 = _calculate_zv(second_similarites_matrix, T + j,
+                                 second_similarites_matrix, T + j - 1, T)
+            zv_3 = _calculate_zv(first_similarites_matrix, T + i,
+                                 second_similarites_matrix, T + j - 1, T)
+            zv_4 = _calculate_zv(second_similarites_matrix, T + j,
+                                 first_similarites_matrix, T + i - 1, T)
             DZV[i, j] = abs(zv_1 + zv_2 - zv_3 - zv_4)
 
     return DZV
@@ -413,7 +390,7 @@ def execute_dzv_clustering(dzv,
         "DZV clustering took {:.4f} seconds".format(end_time - start_time))
 
     logging.debug(
-        "Clustering to {} clusters with spawn of {} gives diameter of {:.4f}".format(
-            k, spawn, diameter))
+        "Clustering to {} clusters with spawn of {} gives diameter of {:.4f}".
+        format(k, spawn, diameter))
 
     return medoids
