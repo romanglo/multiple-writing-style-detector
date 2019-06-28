@@ -72,7 +72,7 @@ def train_word2vec(train_data,
 
 def load_model(path, keyed_vectors=False, binary=False):
     if not os.path.isfile(path):
-        err_msg = "Received embedding model binary not found! Path: {}".format(path)
+        err_msg = "Received embedding model binary not found! Path: \"{}\"".format(path)
         logging.error(err_msg)
         raise_with_traceback(FileNotFoundError(err_msg))
 
@@ -85,7 +85,7 @@ def load_model(path, keyed_vectors=False, binary=False):
 
     running_time = time.time() - start_time
 
-    logging.debug("Model loading time: {} seconds".format(running_time))
+    logging.debug("Model loading time: {:.4f} seconds".format(running_time))
 
     return model
 

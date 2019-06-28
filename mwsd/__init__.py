@@ -72,11 +72,11 @@ def execute(first_text,
 
     Algorithm
     ----------
-    Full algorithm documentation is at the link:  https://github.com/romanglo/multiple-writing-style-detector#algorithm
+    Full algorithm documentation is at the link: https://github.com/romanglo/multiple-writing-style-detector#algorithm
     1. The algorithm receives two texts for input.
     2. Find the N top keywords using tf–idf.
-    3. Remove from the texts the stopwords and words that not in the N (initially defined amount)  top keywords.
-    4. Gather groups of 'L' (initially defined amount)  keywords out of the text.
+    3. Remove from the texts the stopwords and words that not in the N (initially defined amount) top keywords.
+    4. Gather groups of 'L' (initially defined amount) keywords out of the text.
     5. Use word2vec to represent each word as a vector for both documents.
     6. Calculate the correlation between all the words in each group (L) using the Kolmogorov-Smirnov statistic. Each group (L) became a vector of L(L-1)/2 dimensionality.
     7. Find an association between the vector and its 'T' (initially defined amount) predecessors, using ZV formula.

@@ -3,7 +3,6 @@ from __future__ import absolute_import, division
 import logging
 import time
 from builtins import int
-from collections import Counter
 
 import numpy as np
 from future.utils import raise_with_traceback
@@ -12,8 +11,7 @@ from sklearn.metrics import silhouette_score
 
 from .mediods import k_medoids
 from .tfidf import get_n_top_keywords
-from .utils import (UNSUPPORTED_LANGAUGE, ISO_639_1_codes_to_nltk_codes,
-                    detect_language, get_stop_words, split_to_chunks)
+from .utils import split_to_chunks
 from .word2vec import text2ids, train_word2vec
 
 DEFAULT_T = 10
@@ -79,7 +77,7 @@ def _calculate_zv_distances(similarites_matrix, T=DEFAULT_T):
         logging.error(err_msg)
         raise_with_traceback(Exception(err_msg))
 
-    ZVs = np.zeros(chunks_num - T)
+    ZVs = np.zeros(chunks_num - T - 1)
 
     for i in range(ZVs.shape[0]):
         ZVs[i] = _calculate_zv(similarites_matrix, T + i, similarites_matrix,
@@ -92,8 +90,8 @@ def _calculate_dzv_distances(first_similarites_matrix,
                              second_similarites_matrix,
                              T=DEFAULT_T):
 
-    DZV = np.zeros((first_similarites_matrix.shape[0] - T,
-                    second_similarites_matrix.shape[0] - T))
+    DZV = np.zeros((first_similarites_matrix.shape[0] - T - 1,
+                    second_similarites_matrix.shape[0] - T - 1))
 
     for i in range(DZV.shape[0]):
         zv_1 = _calculate_zv(first_similarites_matrix, T + i,
@@ -217,25 +215,13 @@ def dzv_process(first_text,
 
 
 def _preprocess(texts, model=None, n_top_keywords=DEFAULT_N_TOP_KEYWORDS):
-    langauge_ISO_639_1 = Counter(
-        [detect_language(text) for text in texts]).most_common(1)[0][0]
 
-    language_nltk = ISO_639_1_codes_to_nltk_codes(langauge_ISO_639_1)
+    stop_words = []
 
-    if (language_nltk == UNSUPPORTED_LANGAUGE):
-        unsupported_language_msg = "The texts are in unsupported language: {} (ISO 639-1 code)".format(
-            langauge_ISO_639_1)
-        logging.error(unsupported_language_msg)
-        raise_with_traceback(Exception(unsupported_language_msg))
-
-    stop_words = get_stop_words(language_nltk)
-
-    full_text = " ".join(texts)
     if model is None:
-        model = train_word2vec(full_text, stop_words, iter=20)
+        model = train_word2vec(texts, stop_words, iter=20)
 
-    keywords = get_n_top_keywords(full_text, stop_words,
-                                  int(n_top_keywords * 1.5))
+    keywords = get_n_top_keywords(texts, stop_words, int(n_top_keywords * 1.5))
     n_top_keyword = [
         keyword[0] for keyword in keywords if keyword[0] in model.wv.vocab
     ]

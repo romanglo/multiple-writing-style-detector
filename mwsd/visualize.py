@@ -22,7 +22,7 @@ def visualize_zv(zv, show_plot=True, plot_saving_path=None):
         zv_max, 0, zv.shape[0], colors='r', linestyles='dashed', label='max')
     ax.text(1, zv_max + 0.05, "ZV max = {:.2f}".format(zv_max))
 
-    ax.set_ylim(0, zv_max + 1)
+    ax.set_ylim(0, zv_max + max(0.25, zv_max * 1.1))
 
     fig.tight_layout()
 
@@ -142,7 +142,7 @@ def visualize(zv,
         zv_max, 0, zv.shape[0], colors='r', linestyles='dashed', label='max')
     ax1.text(1, zv_max + 0.05, "ZV max = {:.2f}".format(zv_max))
 
-    ax1.set_ylim(0, zv_max + 1)
+    ax1.set_ylim(0, zv_max + max(0.25, zv_max * 1.1))
 
     ax2.imshow(dzv, interpolation='nearest', cmap=plt.cm.Blues)
 
