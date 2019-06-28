@@ -36,6 +36,13 @@ def read_arguments(argv):
         required=False,
         help="Save the results to execution folder")
     ap.add_argument(
+        "-mp",
+        "--model_path",
+        type=str,
+        default=None,
+        required=False,
+        help="The path to word2vec model")
+    ap.add_argument(
         "-v",
         "--verbose",
         type=bool,
@@ -56,8 +63,11 @@ def initialize_logging_config(logging_level):
         level=logging_level)
 
 
-def process(first_input, second_input, save_output):
+def process(first_input, second_input, save_output, model_path):
     mwsd.initialize()
+
+    model_path = None if (not model_path
+                          or not os.path.isfile(model_path)) else model_path
 
     if not os.path.isfile(first_input):
         raise IOError(
@@ -66,10 +76,13 @@ def process(first_input, second_input, save_output):
         raise IOError(
             "Second input file does not exist: {}".format(second_input))
 
+    model = None if not model_path else mwsd.word2vec.load_model(
+        model_path, keyed_vectors=True, binary=True)
+
     first_text, second_text = mwsd.utils.read_text_from_files(
         [first_input, second_input], encoding='utf-8')
 
-    ZV, DZV, clustering_result = mwsd.execute(first_text, second_text)
+    ZV, DZV, clustering_result = mwsd.execute(first_text, second_text, model)
 
     plot_saving_path = 'mwsd_result.png' if save_output else None
 
@@ -102,7 +115,8 @@ def main(args):
     try:
         initialize_logging_config(logging.
                                   DEBUG if args['verbose'] else logging.INFO)
-        process(args['first_input'], args['second_input'], args['save_output'])
+        process(args['first_input'], args['second_input'], args['save_output'],
+                args['model_path'])
     except KeyboardInterrupt:
         logging.info("Process aborted by the user!")
     except Exception:
