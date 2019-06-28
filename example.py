@@ -1,14 +1,13 @@
 from __future__ import unicode_literals
 
 import argparse
+import codecs
+import json
 import logging
 import os
 import sys
-import codecs
-import json
 
 import mwsd
-from mwsd.visualize import visualize
 
 DEFAULT_VERBOSE = True
 DEFAULT_SAVE_OUTPUT = True
@@ -61,28 +60,35 @@ def process(first_input, second_input, save_output):
     mwsd.initialize()
 
     if not os.path.isfile(first_input):
-        raise IOError("First input file does not exist: {}".format(first_input))
+        raise IOError(
+            "First input file does not exist: {}".format(first_input))
     if not os.path.isfile(second_input):
-        raise IOError("Second input file does not exist: {}".format(second_input))
+        raise IOError(
+            "Second input file does not exist: {}".format(second_input))
 
     first_text, second_text = mwsd.utils.read_text_from_files(
         [first_input, second_input], encoding='utf-8')
 
-    ZV, DZV, medoids = mwsd.execute(first_text, second_text)
+    ZV, DZV, clustering_result = mwsd.execute(first_text, second_text)
 
     plot_saving_path = 'mwsd_result.png' if save_output else None
 
-    visualize(
-        ZV, DZV, medoids, show_plot=True, plot_saving_path=plot_saving_path)
+    mwsd.visualize_algorithm_result(
+        ZV,
+        DZV,
+        clustering_result,
+        show_plot=True,
+        plot_saving_path=plot_saving_path)
 
     if (save_output):
         result = {
             'zv': ZV.tolist(),
             'dzv': DZV.tolist(),
-            'medoids': [{
-                'elements': [element.tolist() for element in medoid.elements],
-                'kernal': medoid.kernel.tolist()
-            } for medoid in medoids]
+            'clustering': {
+                'labels': clustering_result[0].tolist(),
+                'distances': clustering_result[1].tolist(),
+                'silhouette': clustering_result[2]
+            }
         }
 
         json.dump(

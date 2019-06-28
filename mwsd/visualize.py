@@ -1,6 +1,6 @@
+from __future__ import division
 import logging
 
-import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -9,7 +9,7 @@ def visualize_zv(zv, show_plot=True, plot_saving_path=None):
 
     fig = plt.figure(num='ZV Distance')
     ax = fig.add_subplot(111)
-    line, = ax.plot(zv)
+    ax.plot(zv)
 
     ax.set_title('ZV Distance')
     ax.set_ylabel('ZV')
@@ -18,22 +18,17 @@ def visualize_zv(zv, show_plot=True, plot_saving_path=None):
     zv_max_index = np.argmax(zv)
     zv_max = zv[zv_max_index]
 
-    ax.annotate(
-        "ZV max = {:.2f}".format(zv_max),
-        xy=(zv_max_index, zv_max),
-        xytext=(zv_max_index - 5, zv_max + 5),
-        arrowprops=dict(facecolor='black', shrink=0.05),
-    )
+    ax.hlines(
+        zv_max, 0, zv.shape[0], colors='r', linestyles='dashed', label='max')
+    ax.text(1, zv_max + 0.05, "ZV max = {:.2f}".format(zv_max))
 
-    ax.set_ylim(0, zv_max + 10)
+    ax.set_ylim(0, zv_max + 1)
 
     fig.tight_layout()
 
     if plot_saving_path is not None:
         try:
-            plt.savefig(
-                plot_saving_path,
-                dpi=1000)
+            plt.savefig(plot_saving_path, dpi=1000)
         except Exception:
             logging.error("Failed on try to save the plot in path: {}".format(
                 plot_saving_path))
@@ -42,8 +37,7 @@ def visualize_zv(zv, show_plot=True, plot_saving_path=None):
         plt.show()
 
 
-def visualize_dzv(dzv, show_plot=True,
-                  plot_saving_path=None):
+def visualize_dzv(dzv, show_plot=True, plot_saving_path=None):
     fig, ax = plt.subplots()
 
     ax.imshow(dzv, interpolation='nearest', cmap=plt.cm.Blues)
@@ -56,9 +50,7 @@ def visualize_dzv(dzv, show_plot=True,
 
     if plot_saving_path is not None:
         try:
-            plt.savefig(
-                plot_saving_path,
-                dpi=1000)
+            plt.savefig(plot_saving_path, dpi=1000)
         except Exception:
             logging.error("Failed on try to save the plot in path: {}".format(
                 plot_saving_path))
@@ -68,57 +60,54 @@ def visualize_dzv(dzv, show_plot=True,
 
 
 def visualize_clustered_dzv(dzv,
-                            medoids,
+                            clustering_result,
                             show_plot=True,
                             plot_saving_path=None):
-
-    dzv_copy = np.copy(dzv)
-    dzv_copy *= 1.0 / (dzv_copy.max() + 0.01)
-
-    res = np.zeros(dzv.shape[0], dtype=np.int)
-
-    for i, row in enumerate(dzv):
-        for j, medoid in enumerate(medoids):
-            found = False
-            for element in medoid.elements:
-                if np.array_equal(row, element):
-                    found = True
-                    break
-            if found:
-                res[i] = j + 1
-                dzv_copy[i, :] += j
-                break
 
     fig, (ax1, ax2) = plt.subplots(
         nrows=1, ncols=2, num='Clustered DZV Distance')
 
-    line, = ax1.plot(res)
+    fig.suptitle('Clustered DZV Distance', fontsize=16)
 
+    labels, distances, silhouette = clustering_result
+
+    ax1.plot(labels)
     ax1.set_ylabel('Cluster')
     ax1.set_xlabel('Blocks')
+    ax1.set_ylim(0, np.max(labels) + 1)
+    ax1.text(
+        0.5,
+        0.01,
+        'Silhouette Score: {:.4f}'.format(silhouette),
+        verticalalignment='bottom',
+        horizontalalignment='center',
+        transform=ax1.transAxes,
+        color='blue',
+        fontsize=15)
 
-    ax1.set_ylim(0, np.max(res) + 1)
+    distances_colors = np.zeros(labels.shape[0], dtype=np.int)
+    for unique in np.unique(labels):
+        indexes = np.where(labels == unique)
+        distances_colors[indexes] = (
+            distances[indexes] * 255) / distances[indexes].max()
 
-    cmap, norm = mcolors.from_levels_and_colors([0, 1, 2, 3, 4], [
-        'blue',
-        'yellow',
-        'red',
-        'green',
-    ])
+    clustered_dzv = np.zeros(dzv.shape, dtype=np.dtype((np.int32, (3, ))))
+    for i in range(len(labels)):
+        color_index = (labels[i] - 1) % 3
+        for color in clustered_dzv[i, :]:
+            color[color_index] = distances_colors[i]
 
-    ax2.pcolor(dzv_copy, cmap=cmap, norm=norm)
-
-    ax2.invert_yaxis()
+    ax2.get_yaxis().set_visible(False)
     ax2.set_ylabel('Second Text')
+    ax2.get_xaxis().set_visible(False)
     ax2.set_xlabel('First Text')
+    plt.imshow(clustered_dzv)
 
     fig.tight_layout()
 
     if plot_saving_path is not None:
         try:
-            plt.savefig(
-                plot_saving_path,
-                dpi=1000)
+            plt.savefig(plot_saving_path, dpi=1000)
         except Exception:
             logging.error("Failed on try to save the plot in path: {}".format(
                 plot_saving_path))
@@ -131,7 +120,7 @@ def visualize_clustered_dzv(dzv,
 
 def visualize(zv,
               dzv,
-              medoids,
+              clustering_result,
               show_plot=True,
               plot_saving_path=None):
     fig, (ax_row, ax_col) = plt.subplots(
@@ -149,14 +138,11 @@ def visualize(zv,
     zv_max_index = np.argmax(zv)
     zv_max = zv[zv_max_index]
 
-    ax1.annotate(
-        "ZV max = {:.2f}".format(zv_max),
-        xy=(zv_max_index, zv_max),
-        xytext=(zv_max_index - 5, zv_max + 5),
-        arrowprops=dict(facecolor='black', shrink=0.05),
-    )
+    ax1.hlines(
+        zv_max, 0, zv.shape[0], colors='r', linestyles='dashed', label='max')
+    ax1.text(1, zv_max + 0.05, "ZV max = {:.2f}".format(zv_max))
 
-    ax1.set_ylim(0, zv_max + 10)
+    ax1.set_ylim(0, zv_max + 1)
 
     ax2.imshow(dzv, interpolation='nearest', cmap=plt.cm.Blues)
 
@@ -164,52 +150,47 @@ def visualize(zv,
     ax2.set_ylabel('Second Text')
     ax2.set_xlabel('First Text')
 
-    dzv_copy = np.copy(dzv)
-    dzv_copy *= 1.0 / (dzv_copy.max() + 0.01)
+    labels, distances, silhouette = clustering_result
 
-    res = np.zeros(dzv.shape[0], dtype=np.int)
-
-    for i, row in enumerate(dzv):
-        for j, medoid in enumerate(medoids):
-            found = False
-            for element in medoid.elements:
-                if np.array_equal(row, element):
-                    found = True
-                    break
-            if found:
-                res[i] = j + 1
-                dzv_copy[i, :] += j
-                break
-
-    line, = ax3.plot(res)
-
+    ax3.set_title('Clustered DZV Distance')
+    ax3.plot(labels)
     ax3.set_ylabel('Cluster')
     ax3.set_xlabel('Blocks')
-    ax3.set_title('Clustered DZV Distance')
+    ax3.set_ylim(0, np.max(labels) + 1)
+    ax3.text(
+        0.5,
+        0.01,
+        'Silhouette Score: {:.4f}'.format(silhouette),
+        verticalalignment='bottom',
+        horizontalalignment='center',
+        transform=ax3.transAxes,
+        color='blue',
+        fontsize=15)
 
-    ax3.set_ylim(0, np.max(res) + 1)
+    distances_colors = np.zeros(labels.shape[0], dtype=np.int)
+    for unique in np.unique(labels):
+        indexes = np.where(labels == unique)
+        distances_colors[indexes] = (
+            distances[indexes] * 255) / distances[indexes].max()
 
-    cmap, norm = mcolors.from_levels_and_colors([0, 1, 2, 3, 4], [
-        'blue',
-        'yellow',
-        'red',
-        'green',
-    ])
+    clustered_dzv = np.zeros(dzv.shape, dtype=np.dtype((np.int32, (3, ))))
+    for i in range(len(labels)):
+        color_index = (labels[i] - 1) % 3
+        for color in clustered_dzv[i, :]:
+            color[color_index] = distances_colors[i]
 
-    ax4.pcolor(dzv_copy, cmap=cmap, norm=norm)
-
-    ax4.invert_yaxis()
-    ax4.set_ylabel('Second Text')
-    ax4.set_xlabel('First Text')
     ax4.set_title('Clustered DZV Distance')
+    ax4.get_yaxis().set_visible(False)
+    ax4.set_ylabel('Second Text')
+    ax4.get_xaxis().set_visible(False)
+    ax4.set_xlabel('First Text')
+    plt.imshow(clustered_dzv)
 
     fig.tight_layout()
 
     if plot_saving_path is not None:
         try:
-            plt.savefig(
-                plot_saving_path,
-                dpi=1000)
+            plt.savefig(plot_saving_path, dpi=1000)
         except Exception:
             logging.error("Failed on try to save the plot in path: {}".format(
                 plot_saving_path))

@@ -8,6 +8,7 @@ from collections import Counter
 import numpy as np
 from future.utils import raise_with_traceback
 from scipy.stats import ks_2samp
+from sklearn.metrics import silhouette_score
 
 from .mediods import k_medoids
 from .tfidf import get_n_top_keywords
@@ -289,9 +290,9 @@ def execute_algorithm(first_text,
     if del_model:
         del model
 
-    medoids = execute_dzv_clustering(DZV)
+    clustering_result = execute_dzv_clustering(DZV)
 
-    return ZV, DZV, medoids
+    return ZV, DZV, clustering_result
 
 
 def execute_zv(text,
@@ -393,4 +394,17 @@ def execute_dzv_clustering(dzv,
         "Clustering to {} clusters with spawn of {} gives diameter of {:.4f}".
         format(k, spawn, diameter))
 
-    return medoids
+    labels = np.zeros(dzv.shape[0], dtype=np.int)
+    distances = np.zeros(dzv.shape[0])
+    for i, row in enumerate(dzv):
+        row_distances = [distance(medoid.kernel, row) for medoid in medoids]
+        min_index = np.argmin(row_distances)
+        labels[i] = min_index + 1
+        distances[i] = row_distances[min_index]
+
+    silhouette = silhouette_score(dzv, labels, distance)
+    logging.debug(
+        "Clustering to {} clusters gives silhouette score of {:.4f}".format(
+            k, silhouette))
+
+    return labels, distances, silhouette

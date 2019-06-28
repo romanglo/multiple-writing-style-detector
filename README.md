@@ -71,7 +71,12 @@ The package provides 4 main features:
 
     Returns
     ----------
-    (np.array, np.array, list): ZV distance (1 dimensional array), DZV distance (2 dimensional array), Mediods
+    (np.array, np.array, tuple): ZV distance (1 dimensional array), DZV distance (2 dimensional array), Clustering
+
+    Clustering contains (according to indexes):
+    0 - Labels array (1 dimensional array).
+    1 - Distance of each element from its medoid (1 dimensional array).
+    2 - Silhouette score (float).
     """
     ```
 1. Text ZV distance implementation:
@@ -155,9 +160,36 @@ The package provides 4 main features:
 
     Returns
     ----------
-    list: Mediods
+    (np.array, np.array, float): labels array (1 dimensional array), distance of each element from its medoid (1 dimensional array), Silhouette score
     """
-   ```
+    ```
+1. Result visualization:
+   ```python
+    def visualize_algorithm_result(zv,
+                               dzv,
+                               clustering_result,
+                               show_plot=True,
+                               plot_saving_path=None):
+    """
+    Visualize the result of the algorithm
+
+    Parameters
+    ----------
+
+    (np.array, np.array, tuple): ZV distance (1 dimensional array), DZV distance (2 dimensional array), Clustering
+
+    zv : np.array (1 dimensional array)
+        DZV distance array
+    dzv : np.array (2 dimensional array)
+        DZV distance matrix.
+    clustering_result : tuple(np.array, np.array, float)
+        DZV clustering result.
+    show_plot : bool
+        To call plt.show() or not.
+    plot_saving_path: str
+        Path to save the figure, None will do nothing.
+    """
+    ```
 ## Algorithm
 
 Writing style detection algorithm performs the following steps:

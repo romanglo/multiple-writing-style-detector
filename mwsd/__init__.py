@@ -21,6 +21,7 @@ from __future__ import absolute_import
 
 from .version import __version__
 
+from .visualize import visualize
 from .utils import download_nltk_dependencies
 from .algorithm import execute_algorithm, execute_dzv, execute_zv, execute_dzv_clustering
 from .algorithm import DEFAULT_CHUNK_SIZE, DEFAULT_N_TOP_KEYWORDS, DEFAULT_T, DEFAULT_CLUSTERING_K, DEFAULT_CLUSTERING_SPAWN
@@ -62,7 +63,12 @@ def execute(first_text,
 
     Returns
     ----------
-    (np.array, np.array, list): ZV distance (1 dimensional array), DZV distance (2 dimensional array), Mediods
+    (np.array, np.array, tuple): ZV distance (1 dimensional array), DZV distance (2 dimensional array), Clustering
+
+    Clustering contains (according to indexes):
+    0 - Labels array (1 dimensional array).
+    1 - Distance of each element from its medoid (1 dimensional array).
+    2 - Silhouette score (float).
 
     Algorithm
     ----------
@@ -175,9 +181,41 @@ def dzv_clustering(dzv, k=DEFAULT_CLUSTERING_K,
 
     Returns
     ----------
-    list: Mediods
+    (np.array, np.array, float): labels array (1 dimensional array), distance of each element from its medoid (1 dimensional array), Silhouette score
     """
     return execute_dzv_clustering(dzv=dzv, k=k, spawn=spawn)
 
 
-__all__ = ['tfidf', 'word2vec', 'utils', 'algorithm', 'visualize', 'mediods']
+def visualize_algorithm_result(zv,
+                               dzv,
+                               clustering_result,
+                               show_plot=True,
+                               plot_saving_path=None):
+    """
+    Visualize the result of the algorithm
+
+    Parameters
+    ----------
+
+    (np.array, np.array, tuple): ZV distance (1 dimensional array), DZV distance (2 dimensional array), Clustering
+
+    zv : np.array (1 dimensional array)
+        DZV distance array
+    dzv : np.array (2 dimensional array)
+        DZV distance matrix.
+    clustering_result : tuple(np.array, np.array, float)
+        DZV clustering result.
+    show_plot : bool
+        To call plt.show() or not.
+    plot_saving_path: str
+        Path to save the figure, None will do nothing.
+    """
+    visualize(
+        zv=zv,
+        dzv=dzv,
+        clustering_result=clustering_result,
+        show_plot=show_plot,
+        plot_saving_path=plot_saving_path)
+
+
+__all__ = ['algorithm', 'mediods', 'tfidf', 'utils', 'visualize', 'word2vec']
