@@ -2,10 +2,8 @@
 
  This project implements a solution of detecting numerous writing styles in a text. There are many different ways to measure how similar two documents are, or how similar a document is to a query. The project implements the first algorithm of the article with minor changes, which don't affect the outcomes. This algorithm is suggested in the ["Patterning of writing style evolution by means of dynamic similarity"](http://www.math.spbu.ru/user/gran/papers/Granichin_Pattern_Recognition.pdf) by Konstantin Amelina, Oleg Granichina, Natalia Kizhaevaa and Zeev Volkovich.
 
-
 Table of Contents
 -----------------
-
 
   * [Quickstart](#quickstart)
     * [Requirements](#requirements)
@@ -195,8 +193,8 @@ The package provides 4 main features:
 Writing style detection algorithm performs the following steps:
 1. The algorithm receives two texts for input.
 1. Find the N top keywords using [tf–idf](https://en.wikipedia.org/wiki/Tf%E2%80%93idf "tf-idf in Wikipedia")
-1. Remove from the texts the stopwords and words that not in the N (initially defined amount)  top keywords.
-1. Gather groups of 'L' (initially defined amount)  keywords out of the text.
+1. Remove from the texts the stopwords and words that not in the N (initially defined amount) top keywords.
+1. Gather groups of 'L' (initially defined amount) keywords out of the text.
 1. Use word2vec to represent each word as a vector for both documents.
 1. Calculate the correlation between all the words in each group (L) using the Kolmogorov-Smirnov statistic. Each group (L) became a vector of L(L-1)/2 dimensionality.
 1. Find an association between the vector and its 'T' (initially defined amount) predecessors, via: <div style="text-align:center">![Association between the vector and its T predecessors](images/zv.png "Association between the vector and its T predecessors")</div>
@@ -205,7 +203,15 @@ Writing style detection algorithm performs the following steps:
 
 ## Results
 
-Below is a result that clearly shows that the texts consist of 2 different writing styles. <div style="text-align:center">![Multiple Writing Style Detector Algorithm Result](images/mwsd_result.png "Multiple Writing Style Detector Algorithm Result")</div>
+We ran the algorithm on the next two books of the famous writer [Isaac Asimov](https://en.wikipedia.org/wiki/Isaac_Asimov):
+1. [Foundation and Empire (1952)](https://en.wikipedia.org/wiki/Foundation_and_Empire)
+1. [Foundation and Earth (1986)](https://en.wikipedia.org/wiki/Foundation_and_Earth)
+
+Without a doubt, the two books written by Asimov. However, because of a long time between their writing, many claim that Asimov's writing style has changed over the years.
+
+Below is a result that shows that the books consist of two different writing styles: <div style="text-align:center">![Multiple Writing Style Detector Algorithm Result](images/mwsd_result.png "Multiple Writing Style Detector Algorithm Result")</div>
+
+**Note!** To improve the quality of the above result we used [Google's word2vec](https://code.google.com/archive/p/word2vec/).
 
 ## Authors
 
@@ -218,4 +224,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Acknowledgements
 
-Big thanks for Prof. [Zeev Volkovich](mailto:zeev53@mail.ru) for his assistance in the implementation and understanding process.
+In some scripts, we were helped other sources. At the top of that scripts, you can find credit and link to the sources.
+
+Additionally, big thanks for [Prof. Zeev Volkovich](mailto:zeev53@mail.ru) for his assistance in the implementation and understanding process.
