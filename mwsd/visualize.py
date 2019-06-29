@@ -5,6 +5,23 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
+def _maximaize_figure():
+    backend = plt.get_backend()
+
+    manager = plt.get_current_fig_manager()
+
+    if backend == 'QT':
+        manager.window.showMaximized()
+    elif backend == 'TkAgg':
+        manager.resize(*manager.window.maxsize())
+    elif backend == 'WX':
+        manager.frame.Maximize(True)
+    else:
+        logging.warning(
+            'Failed on try to maximize figure! Unknown matplotlib backend: {}'.
+            format(backend))
+
+
 def visualize_zv(zv, show_plot=True, plot_saving_path=None):
 
     fig = plt.figure(num='ZV Distance')
@@ -28,6 +45,7 @@ def visualize_zv(zv, show_plot=True, plot_saving_path=None):
 
     if plot_saving_path is not None:
         try:
+            _maximaize_figure()
             plt.savefig(plot_saving_path, dpi=1000)
         except Exception:
             logging.error("Failed on try to save the plot in path: {}".format(
@@ -50,6 +68,7 @@ def visualize_dzv(dzv, show_plot=True, plot_saving_path=None):
 
     if plot_saving_path is not None:
         try:
+            _maximaize_figure()
             plt.savefig(plot_saving_path, dpi=1000)
         except Exception:
             logging.error("Failed on try to save the plot in path: {}".format(
@@ -107,6 +126,7 @@ def visualize_clustered_dzv(dzv,
 
     if plot_saving_path is not None:
         try:
+            _maximaize_figure()
             plt.savefig(plot_saving_path, dpi=1000)
         except Exception:
             logging.error("Failed on try to save the plot in path: {}".format(
@@ -190,6 +210,7 @@ def visualize(zv,
 
     if plot_saving_path is not None:
         try:
+            _maximaize_figure()
             plt.savefig(plot_saving_path, dpi=1000)
         except Exception:
             logging.error("Failed on try to save the plot in path: {}".format(
